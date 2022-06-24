@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="./js/jquery-3.3.1.min.js"></script>
+		<script src="./js/vue.js"></script>
+		<script src="./js/base64.js"></script>
+		<!-- 网络请求库 -->
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="./js/test.js"></script>
+		<link rel="stylesheet" type="text/css" href="./font-awesome-4.7.0/css/font-awesome.css"/>
+		<link rel="stylesheet" type="text/css" href="./css/music.css"/>
+		<title>FreeMusic</title>
+	</head>
+	<body>
+		<div class="music">
+			<!-- 专辑模糊 -->
+			<div id="vagueBox"></div>
+			<!-- 网页头部 -->
+			<div class="music_top">
+				<a href="#" class="top_left">FreeMusic</a>
+				<!-- <div class="top_right">
+					<a href="#">admin</a>
+					<a href="#">退出登陆</a>
+				</div> -->
+			</div>
+			<!-- 网页主体 -->
+			<div class="music_body">
+				<!-- 歌曲MV模态框 -->
+				<div id="musicMv">
+					<video :src="music_mv.url!=''?music_mv.url:''" id="Mv" controls>浏览器不支持该视频</video>
+					<div title="关闭" @click="closeMv" id="closeMv">x</div>
+				</div>
+				<div class="body_left">
+					<!-- 歌曲选项 -->
+					<div class="left_option">
+						<a href="https://music.163.com" target="_blank">音乐来源于网易云音乐</a>
+						<a href="javascript:;" @click="remove_music"><i class="fa fa-trash-o"></i>删除</a>
+						<a href="javascript:;" @click="clear_music"><i></i>清空列表</a>
+					</div>
+					<!-- 歌曲搜索 -->
+					<div id="search">
+						<input type="text" v-model="search_music" @keyup.enter="music_search" placeholder="开始音乐之旅" /><i class="fa fa-search search" @click="music_search"></i>
+						<span style="color: red;">{{err}}</span>
+					</div>
+					<!-- 歌曲列表 -->
+					<div class="left_content">
+						<ul id="music_title">
+							<li>
+								<input @click="checkedAll_music" id="checkedAll" type="checkbox" />
+								<a href="javascript:;" @click="checkedAll_music">全选</a>
+							</li>
+							<li>歌曲</li>
+							<li>歌手</li>
+							<li>时长</li>
+						</ul>
+						<ul id="music_content">
+							<li :class="item.fee==1?'vip':''" v-for="(item,index) in music_list">
+								<div id="musicId" @click="musicChecked(index)">
+									<input type="checkbox" class="index" :value="index" />
+									<span id="music_id">{{index+1}}</span>
+								</div>
+								<div id="musicName">
+									{{item.name}}
+									<div id="music_menu">
+										<div id="menu">
+											<i title="歌曲Mv" v-if="item.mvid!=0" @click="get_mv(item.mvid,index)" class="fa fa-television mv"></i>
+											<i title="播放" @click="music_play(index)" class="fa fa-play play"></i>
+											<a v-if="item.fee==8" title="下载" target="_blank" :href="'thunder://'+ThunderDownload(item.id)">
+												<i class="fa fa-download download"></i>
+											</a>
+										</div>
+									</div>
+								</div>
+								<div id="musicSinger"><a target="_blank" @click="singerMusic(item.artists[0].name)">{{item.artists[0].name}}</a></div>
+								<div id="musicTime">
+									{{get_musicTime(item.duration)}}
+									<span>{{item.fee==1?'付费':''}}</span>
+									<i title="删除" @click="delMusic(index)" class="fa fa-trash del"></i>
+								</div>
+							</li>
+						</ul>
+						<!-- 提示框 -->
+						<div id="message">
+							当前歌曲为付费项目,请移步至网易云
+						</div>
+					</div>
+				</div>
+				<div class="body_right">
+					<!-- 当前播放的音乐封面和歌曲详细信息 -->
+					<div class="right_top">
+						<img draggable="false" :src="cover_url === ''?'./img/music_cover.jpg':cover_url" />
+						<h4 :title="music_name">{{music_name === ""?'':'歌名:'+music_name}}</h4>
+						<h5 :title="music_singer">{{music_singer === ""?'':'歌手:'+music_singer}}</h5>
+						<h5 :title="music_album">{{music_album === ""?'':'专辑名:'+music_album}}</h5>
+					</div>
+					<!-- 当前播放的音乐歌词 -->
+					<div class="right_bottom">
+						<div id="lyric">
+							<p v-for="item in music_lyric">
+								{{item.text}}
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 网页底部播放栏 -->
+			<div class="music_bottom">
+				<!-- 底部音乐控制 -->
+				<div id="music_control">
+					<audio id="music" preload="auto" :src="'https://music.163.com/song/media/outer/url?id='+music_id+'.mp3'"></audio>
+					<!-- 底部左侧控制区 -->
+					<div class="music_left">
+						<i class="fa fa-step-backward" id="prev" @click="prev"></i>
+						<i class="fa fa-play" id="play" @click="music_control($event)"></i>
+						<i class="fa fa-step-forward" id="next" @click="next"></i>
+					</div>
+					<!-- 底部中间音乐进度区 -->
+					<div class="music_center">
+						<div class="bar" @mousedown="music_progressMove"></div>
+						<div class="progress" @click="music_progressBar"></div>
+						<div class="progress_bar" @click="music_progressBar"></div>
+						<div class="music_time"></div>
+					</div>
+					<!-- 底部右侧音量控制区 -->
+					<div class="music_right">
+						<div class="volume">
+							<i @click="music_volumeBtn($event)" class="fa fa-volume-up" id="volume_icon"></i>
+							<div class="volume_bar" @mousedown="music_volumeMove"></div>
+							<div class="volume_progress" @click="music_volume"></div>
+							<div class="volume_progress_bar" @click="music_volume"></div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Mv信息 -->
+				<div id="Mv_content">
+					<h1 :title="music_name">{{mv_name === ""?'':'歌名:'+mv_name}}</h1>
+					<h4 :title="music_singer">{{mv_singer === ""?'':'歌手:'+mv_singer}}</h4>
+					<h4 :title="music_album">{{mv_album === ""?'':'专辑名:'+mv_album}}</h4>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
