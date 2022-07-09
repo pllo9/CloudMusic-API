@@ -6,7 +6,7 @@
 		<script src="./js/vue.js"></script>
 		<script src="./js/base64.js"></script>
 		<!-- 网络请求库 -->
-		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
 		<script src="./js/test.js"></script>
 		<link rel="stylesheet" type="text/css" href="./font-awesome-4.7.0/css/font-awesome.css"/>
 		<link rel="stylesheet" type="text/css" href="./css/music.css"/>
@@ -89,7 +89,7 @@
 				<div class="body_right">
 					<!-- 当前播放的音乐封面和歌曲详细信息 -->
 					<div class="right_top">
-						<img draggable="false" :src="cover_url === ''?'./img/music_cover.jpg':cover_url" />
+						<img draggable="false" :src="cover_url === ''?'./img/cover_img.jpg':cover_url" />
 						<h4 :title="music_name">{{music_name === ""?'':'歌名:'+music_name}}</h4>
 						<h5 :title="music_singer">{{music_singer === ""?'':'歌手:'+music_singer}}</h5>
 						<h5 :title="music_album">{{music_album === ""?'':'专辑名:'+music_album}}</h5>

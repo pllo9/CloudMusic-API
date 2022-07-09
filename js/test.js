@@ -319,10 +319,16 @@ window.onload = function(){
 			// 音乐搜索
 			music_search: function(){
 				var that = this;
+				// 弹出提示
+				var message = document.querySelector("#message");
+				message.innerText = '搜索中';
+				message.style.top = "10px";
 				if(that.search_music != ""){
 					axios.get("https://music.cyrilstudio.top/search?keywords="+that.search_music)
 					.then(function(response){
 						that.music_list = response.data.result.songs;
+						message.innerText = '搜索完成';
+						message.style.top = "-40px";
 						// 回到顶部
 						var music_content = document.querySelector("#music_content");
 						music_content.scrollTop = 0;
@@ -352,9 +358,9 @@ window.onload = function(){
 				.then(function(response){
 					that.cover_url = response.data.artist.picUrl;
 					// 主体背景替换为专辑封面
-					var bodyBG1 = document.querySelector("#vagueBox");
+					// var bodyBG1 = document.querySelector("#vagueBox");
 					var bodyBG2 = document.querySelector(".music");
-					bodyBG1.style.backgroundImage = "url("+that.cover_url+")";
+					// bodyBG1.style.backgroundImage = "url("+that.cover_url+")";
 					bodyBG2.style.backgroundImage = "url("+that.cover_url+")";
 				}).catch(function(err){
 					console.log(err);
@@ -420,6 +426,7 @@ window.onload = function(){
 				// 弹出提示
 				var message = document.querySelector("#message");
 				if(isVip.className == "vip"){
+					message.innerText = '当前歌曲为付费项目,请移步至网易云~'
 					message.style.top = "10px";
 					// 2秒后消失
 					setTimeout(function(){message.style.top = "-40px"},2000);
